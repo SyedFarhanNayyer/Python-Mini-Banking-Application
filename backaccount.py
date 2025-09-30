@@ -1,29 +1,54 @@
 import os
+import json
+
+
+if not os.path.exists("Accounts"):
+    os.mkdir("Accounts")
 
 
 # File Path Checking in Directory
 
 def checking_file_exist(filepath):
+    print(filepath)
     try:
-        with open(f"{filepath}", "r") as f:
-            f.read()
+        os.path.exists(filepath)
     except FileNotFoundError:
         with open(f"{filepath}", "w") as f:
             f.write("0")
 
+# File Path Checking in Directory
 
-class backaccount:
-    bankname = "Standard Chartered"
+
+def account_generate(filepath, name, passcode=0000):
+
+    account_info = {"name": name, "pass_code": passcode, "balance": 0}
+
+    if os.path.exists(filepath):
+        print("You already Have Account, Login to your Account")
+    else:
+        os.mkdir(filepath)
+        print(f"Account Sucessfully Created")
+    with open(f"{filepath}/{name}_info.json", "w") as f:
+        json.dump(account_info, f)
+
+
+class online_banking:
+    bankname = "Sadaat Bank Limited"
 
     def __init__(self, name, balance=0):
         self.balance = balance
-        self.name = name
-        self.filepath = f"Bank Account Application/backaccount/{self.name}_account.txt"
-        self.history = f"Bank Account Application/backaccount/{self.name}_account_history.txt"
+        self.account_holder = name
+        self.accounts_path = "Accounts"
+        self.user_info = os.path.join(
+            self.accounts_path, f"{self.account_holder}_info.json")
 
-        checking_file_exist(self.filepath)
+        print(self.user_info)
+        self.history = os.path.join(
+            self.accounts_path, f"{self.account_holder}_history.json")
+        print(self.history)
+        checking_file_exist(self.user_info)
 
-        with open(self.filepath, "r") as f:
+        with open(self.user_info, "r") as f:
             new_balance = int(f.read())
             if new_balance != "":
                 self.balance = new_balance
@@ -98,8 +123,8 @@ class backaccount:
                         f.write(
                             f"\nWelcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
                     if payee != "":
-                        payee_path = f"Bank Account Application/backaccount/{payee}_account.txt"
-                        payee_history_path = f"Bank Account Application/backaccount/{payee}_account_history.txt"
+                        payee_path = f"Bank Account Application/Accounts/{payee}_account.txt"
+                        payee_history_path = f"Bank Account Application/Accounts/{payee}_account_history.txt"
 
                         with open(f"{payee_path}", "r") as f:
                             payee_balance = int(f.read())
@@ -120,35 +145,35 @@ class account_handling:
     type = input("Login / Signup: ")
 
     def __init__(self):
-        if self.type == "Login":
-            account_name = input("Enter Name: ")
-            try:
-                with open(f"Bank Account Application/backaccount/{account_name}_account.txt", "r") as f:
-                    f.read()
-            except FileNotFoundError:
-                print("Your account is not created")
-                return
 
-            account_name = backaccount(f"{account_name}")
+        self.account_user = input("Enter Name: ")
+        self.account_passcode = input("Enter Passcode: ")
+        self.account_path = f"Accounts/{self.account_user}"
+        print(self.account_user, self.account_path)
+
+        if self.type == "Login":
+            # account_generate(self.account_path)
+
+            self.account_user = online_banking(f"{self.account_user}")
             while True:
                 select_option = input(
                     "Withdraw, Deposit, Balance, History, Transfer, Logout: ").capitalize()
                 if select_option == "Deposit":
-                    account_name.deposit(
-                        int(input(f"{account_name} Deposit Amount: ")))
+                    self.account_user.deposit(
+                        int(input(f"{self.account_user} Deposit Amount: ")))
 
                 elif select_option == "Withdraw":
-                    account_name.withdrawal(
-                        int(input(f"{account_name} Withdraw Amount: ")))
+                    self.account_user.withdrawal(
+                        int(input(f"{self.account_use} Withdraw Amount: ")))
 
                 elif select_option == "Balance":
-                    account_name.balance_check()
+                    self.account_user.balance_check()
 
                 elif select_option == "History":
-                    account_name.check_transaction_history()
+                    self.account_user.check_transaction_history()
 
                 elif select_option == "Transfer":
-                    account_name.transfer_fund(
+                    self.account_user.transfer_fund(
                         input("Enter Payee Name: "), int(input("Enter Amount: ")))
 
                 elif select_option == "Logout":
@@ -159,18 +184,9 @@ class account_handling:
                         f"Your Selected Option {select_option} is not available in menu")
 
         if self.type == "Signup":
-            account_name = input("Enter Name: ")
-            try:
-                with open(f"Bank Account Application/backaccount/{account_name}_account.txt", "r") as f:
-                    name = f.read()
-                    if name:
-                        print("You Already have Account, Please login Instead")
-                        return
-            finally:
-                with open(f"Bank Account Application/backaccount/{account_name}_account.txt", "w") as f:
-                    f.write("0")
-                    print("Your Account is Created Sucessfully, Please Login")
-                    return
+
+            account_generate(self.account_path,
+                             self.account_user, self.account_passcode)
 
 
 start_banking = account_handling()
