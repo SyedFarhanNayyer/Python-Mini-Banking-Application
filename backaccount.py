@@ -1,6 +1,7 @@
 import os
 import json
 
+# Initial Directories
 
 if not os.path.exists("Accounts"):
     os.mkdir("Accounts")
@@ -16,12 +17,11 @@ def checking_file_exist(filepath):
         with open(f"{filepath}", "w") as f:
             f.write("0")
 
-# File Path Checking in Directory
+# Account Creation
 
+def account_generate(filepath, name, passcode=0000,):
 
-def account_generate(filepath, name, passcode=0000):
-
-    account_info = {"name": name, "pass_code": passcode, "balance": 0}
+    account_info = {"Bank" : "Sadaat Bank Limited", "name": name, "pass_code": passcode, "balance": 0, "History" : {} }
 
     if os.path.exists(filepath):
         print("You already Have Account, Login to your Account")
@@ -31,29 +31,33 @@ def account_generate(filepath, name, passcode=0000):
     with open(f"{filepath}/{name}_info.json", "w") as f:
         json.dump(account_info, f)
 
+# Account Verfication
+
+def verify_account(name, passcode):
+    if os.path.exists(f"Accounts/{name}/{name}_info.json"):
+        with open(f"Accounts/{name}/{name}_info.json", "r") as f:
+            account_info = json.load(f)
+            if account_info["pass_code"] == passcode:
+                return True
+            else:
+                print("Invalid Passcode")
+    else: 
+        return False
+
 
 class online_banking:
     bankname = "Sadaat Bank Limited"
 
     def __init__(self, name, balance=0):
-        self.balance = balance
         self.account_holder = name
-        self.accounts_path = "Accounts"
-        self.user_info = os.path.join(
-            self.accounts_path, f"{self.account_holder}_info.json")
-
+        self.user_info = f"Accounts/{self.account_holder}/{self.account_holder}_info.json"
         print(self.user_info)
-        self.history = os.path.join(
-            self.accounts_path, f"{self.account_holder}_history.json")
-        print(self.history)
-        checking_file_exist(self.user_info)
-
         with open(self.user_info, "r") as f:
-            new_balance = int(f.read())
-            if new_balance != "":
-                self.balance = new_balance
-            else:
-                self.balance = 0
+            user_account_info = json.load(f)
+
+        self.balance = user_account_info["balance"]
+
+        print(self.balance)
 
     # Deposit Functionality
 
@@ -149,39 +153,43 @@ class account_handling:
         self.account_user = input("Enter Name: ")
         self.account_passcode = input("Enter Passcode: ")
         self.account_path = f"Accounts/{self.account_user}"
-        print(self.account_user, self.account_path)
+  
 
         if self.type == "Login":
-            # account_generate(self.account_path)
 
-            self.account_user = online_banking(f"{self.account_user}")
-            while True:
-                select_option = input(
-                    "Withdraw, Deposit, Balance, History, Transfer, Logout: ").capitalize()
-                if select_option == "Deposit":
-                    self.account_user.deposit(
-                        int(input(f"{self.account_user} Deposit Amount: ")))
+            if verify_account(self.account_user, self.account_passcode) is True:
 
-                elif select_option == "Withdraw":
-                    self.account_user.withdrawal(
-                        int(input(f"{self.account_use} Withdraw Amount: ")))
+                account_access = online_banking(f"{self.account_user}")
+                while True:
+                    print("Welcome to Sadaat Bank Limited!")
+                    print("Withdraw\nDeposit\nBalance\nHistory\nTransfer\nLogout")
+                    select_option = input("Select Menu: ").capitalize()
+                    if select_option == "Deposit":
+                        account_access.deposit(
+                            int(input(f"{self.account_user} Deposit Amount: ")))
 
-                elif select_option == "Balance":
-                    self.account_user.balance_check()
+                    elif select_option == "Withdraw":
+                        account_access.withdrawal(
+                            int(input(f"{self.account_use} Withdraw Amount: ")))
 
-                elif select_option == "History":
-                    self.account_user.check_transaction_history()
+                    elif select_option == "Balance":
+                        account_access.balance_check()
 
-                elif select_option == "Transfer":
-                    self.account_user.transfer_fund(
-                        input("Enter Payee Name: "), int(input("Enter Amount: ")))
+                    elif select_option == "History":
+                        account_access.check_transaction_history()
 
-                elif select_option == "Logout":
-                    print(f"Thank you to using the Standard Chartered Bank, Bye Bye")
-                    break
-                else:
-                    print(
-                        f"Your Selected Option {select_option} is not available in menu")
+                    elif select_option == "Transfer":
+                        account_access.transfer_fund(
+                            input("Enter Payee Name: "), int(input("Enter Amount: ")))
+
+                    elif select_option == "Logout":
+                        print(f"Thank you to using the Standard Chartered Bank, Bye Bye")
+                        break
+                    else:
+                        print(
+                            f"Your Selected Option {select_option} is not available in menu")
+            else:
+                print(f"Hi {self.account_user}, You are not a Sadaat Bank Limited User.")
 
         if self.type == "Signup":
 
