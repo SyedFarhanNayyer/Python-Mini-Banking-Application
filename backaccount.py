@@ -1,8 +1,7 @@
+import os
 
-#####################################
+
 # File Path Checking in Directory
-#####################################
-
 
 def checking_file_exist(filepath):
     try:
@@ -31,9 +30,7 @@ class backaccount:
             else:
                 self.balance = 0
 
-    #####################################
     # Deposit Functionality
-    #####################################
 
     def deposit(self, amount):
         self.balance += amount
@@ -48,9 +45,7 @@ class backaccount:
             f.write(
                 f"\nWelcome to {self.bankname}, You Deposit Rupees +{amount}, You have Balance of Rupess {self.balance}")
 
-    #####################################
     # Withdrawal Functionality
-    #####################################
 
     def withdrawal(self, cash=0):
         if cash <= self.balance and cash <= 50000:
@@ -71,63 +66,55 @@ class backaccount:
         else:
             print("Insufficient Balance in your Account.")
 
-    #####################################
     # Balance Checker Functionality
-    #####################################
 
     def balance_check(self):
         print(
             f"Welcome to {self.bankname}, Your account balance is {self.balance} ")
 
-    #####################################
     # Transaction History Functionality
-    #####################################
 
     def check_transaction_history(self):
         with open(f"{self.history}", "r") as f:
-           history =  f.readlines()
-           for transaction in  history:
+            history = f.readlines()
+            for transaction in history:
                 print(f"{transaction}", end="")
 
-    #####################################
     # Transfer Fund within Accounts Functionality
-    #####################################
 
     def transfer_fund(self, payee, value):
-       
+
         if payee != "" and value != "":
             if value <= self.balance:
                 self.balance -= value
                 with open(f"{self.filepath}", "w") as f:
                     f.write(f"{self.balance}")
                     print(
-                    f"Welcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
-                    
+                        f"Welcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
+
                     checking_file_exist(self.history)
-                    
+
                     with open(f"{self.history}", "a") as f:
                         f.write(
-                        f"\nWelcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
+                            f"\nWelcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
                     if payee != "":
                         payee_path = f"Bank Account Application/backaccount/{payee}_account.txt"
                         payee_history_path = f"Bank Account Application/backaccount/{payee}_account_history.txt"
-                
+
                         with open(f"{payee_path}", "r") as f:
                             payee_balance = int(f.read())
                             payee_balance += value
-                         
+
                         with open(f"{payee_path}", "w") as f:
                             f.write(f"{payee_balance}")
                         with open(f"{payee_history_path}", "a") as f:
-                            f.write(f"\nWelcome to {self.bankname}, {self.name} is transfered Rupees +{value}, You have Balance of Rupess {payee_balance}") 
+                            f.write(
+                                f"\nWelcome to {self.bankname}, {self.name} is transfered Rupees +{value}, You have Balance of Rupess {payee_balance}")
             else:
                 print("Insufficient Balance in your Account")
-                    
 
 
-#####################################
 # Selecting Options Functionality
-#####################################
 
 class account_handling:
     type = input("Login / Signup: ")
@@ -141,32 +128,36 @@ class account_handling:
             except FileNotFoundError:
                 print("Your account is not created")
                 return
-                
+
             account_name = backaccount(f"{account_name}")
             while True:
-                select_option = input("Withdraw, Deposit, Balance, History, Transfer, Logout: ").capitalize()
-                if select_option == "Deposit":  
-                        account_name.deposit(int(input(f"{account_name} Deposit Amount: ")))
-                        
+                select_option = input(
+                    "Withdraw, Deposit, Balance, History, Transfer, Logout: ").capitalize()
+                if select_option == "Deposit":
+                    account_name.deposit(
+                        int(input(f"{account_name} Deposit Amount: ")))
+
                 elif select_option == "Withdraw":
-                        account_name.withdrawal(int(input(f"{account_name} Withdraw Amount: ")))
-                        
+                    account_name.withdrawal(
+                        int(input(f"{account_name} Withdraw Amount: ")))
+
                 elif select_option == "Balance":
-                        account_name.balance_check()
-                        
+                    account_name.balance_check()
+
                 elif select_option == "History":
-                        account_name.check_transaction_history()
-                        
+                    account_name.check_transaction_history()
+
                 elif select_option == "Transfer":
-                        account_name.transfer_fund(input("Enter Payee Name: "), int(input("Enter Amount: ")))
-                        
+                    account_name.transfer_fund(
+                        input("Enter Payee Name: "), int(input("Enter Amount: ")))
+
                 elif select_option == "Logout":
                     print(f"Thank you to using the Standard Chartered Bank, Bye Bye")
                     break
                 else:
-                    print(f"Your Selected Option {select_option} is not available in menu")
-        
-        
+                    print(
+                        f"Your Selected Option {select_option} is not available in menu")
+
         if self.type == "Signup":
             account_name = input("Enter Name: ")
             try:
@@ -174,12 +165,12 @@ class account_handling:
                     name = f.read()
                     if name:
                         print("You Already have Account, Please login Instead")
-                        return         
+                        return
             finally:
                 with open(f"Bank Account Application/backaccount/{account_name}_account.txt", "w") as f:
                     f.write("0")
                     print("Your Account is Created Sucessfully, Please Login")
                     return
 
-start_banking = account_handling()
 
+start_banking = account_handling()
