@@ -6,7 +6,6 @@ import json
 if not os.path.exists("Accounts"):
     os.mkdir("Accounts")
 
-
 # File Path Checking in Directory
 
 def checking_file_exist(filepath):
@@ -21,7 +20,7 @@ def checking_file_exist(filepath):
 
 def account_generate(filepath, name, passcode=0000,):
 
-    account_info = {"Bank" : "Sadaat Bank Limited", "name": name, "pass_code": passcode, "balance": 0, "History" : {} }
+    account_info = {"Bank" : "Sadaat Bank Limited", "name": name, "pass_code": passcode, "balance": 0, "History" : [] }
 
     if os.path.exists(filepath):
         print("You already Have Account, Login to your Account")
@@ -41,55 +40,57 @@ def verify_account(name, passcode):
                 return True
             else:
                 print("Invalid Passcode")
-    else: 
+                return False
+    else:
+        print(f"Hi {name}, You are not a Sadaat Bank Limited User.")
         return False
-
 
 class online_banking:
     bankname = "Sadaat Bank Limited"
 
     def __init__(self, name, balance=0):
         self.account_holder = name
-        self.user_info = f"Accounts/{self.account_holder}/{self.account_holder}_info.json"
-        print(self.user_info)
-        with open(self.user_info, "r") as f:
+        self.user_info_path = f"Accounts/{self.account_holder}/{self.account_holder}_info.json"
+        with open(self.user_info_path, "r") as f:
             user_account_info = json.load(f)
 
         self.balance = user_account_info["balance"]
 
         print(self.balance)
 
+        with open(self.user_info_path, "r") as f:
+            account_info = json.load(f)
+        self.account_info = account_info
+
     # Deposit Functionality
 
     def deposit(self, amount):
         self.balance += amount
-        with open(f"{self.filepath}", "w") as f:
-            f.write(f"{self.balance}")
-        print(
-            f"Welcome to {self.bankname}, You Deposit Rupees: {amount} you balance is Rupees: {self.balance}")
-
-        checking_file_exist(self.history)
-
-        with open(f"{self.history}", "a") as f:
-            f.write(
-                f"\nWelcome to {self.bankname}, You Deposit Rupees +{amount}, You have Balance of Rupess {self.balance}")
+        
+        self.account_info["balance"] = self.balance
+        with open(self.user_info_path, "w") as f:
+            json.dump(self.account_info, f , indent=4)
+        print(f"Welcome to {self.account_info["bank"]}, You Deposit Rupees: {amount} you balance is Rupees: {self.balance}")
+        with open(self.user_info_path, "w") as f:
+            self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, You Deposit Rupees +{amount}, You have Balance of Rupess {self.account_info["balance"]}")
+            json.dump(self.account_info, f , indent=4)
 
     # Withdrawal Functionality
 
     def withdrawal(self, cash=0):
         if cash <= self.balance and cash <= 50000:
             self.balance -= cash
-            with open(f"{self.filepath}", "w") as f:
-                f.write(f"{self.balance}")
-            print(
-                f"Welcome to {self.bankname}, You Widthawal of Rupees: {cash} you new balance is Rupees: {self.balance}")
+            self.account_info["balance"] = self.balance
 
-            checking_file_exist(self.history)
-
-            with open(f"{self.history}", "a") as f:
-                f.write(
-                    f"\nWelcome to {self.bankname}, You Withdraw Rupees -{cash}, You have Balance of Rupess {self.balance}")
-
+            with open(f"{self.user_info_path}", "w") as f:
+                json.dump(self.account_info, f, indent=4)
+                print(
+                f"Welcome to {self.account_info["bank"]}, You Widthawal of Rupees: {cash} you new balance is Rupees: {self.balance}")
+            
+            with open(self.user_info_path, "w") as f:
+                self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, You Widthawal of Rupees: {cash} you new balance is Rupees: {self.balance}")
+                json.dump(self.account_info, f , indent=4)
+         
         elif cash > 50000:
             print("You Limit is just 50,000 Rupess, Try lower Value")
         else:
@@ -99,51 +100,56 @@ class online_banking:
 
     def balance_check(self):
         print(
-            f"Welcome to {self.bankname}, Your account balance is {self.balance} ")
+            f"Welcome to {self.account_info["bank"]}, Your account balance is {self.account_info["balance"]} ")
 
     # Transaction History Functionality
 
     def check_transaction_history(self):
-        with open(f"{self.history}", "r") as f:
-            history = f.readlines()
-            for transaction in history:
-                print(f"{transaction}", end="")
+        for item in self.account_info["history"]:
+            print(f"{item}\n")
 
     # Transfer Fund within Accounts Functionality
 
     def transfer_fund(self, payee, value):
-
+        
         if payee != "" and value != "":
             if value <= self.balance:
-                self.balance -= value
-                with open(f"{self.filepath}", "w") as f:
-                    f.write(f"{self.balance}")
+                payee_path = f"Accounts/{payee}/{payee}_info.json"
+                if payee_path:
+                    with open(payee_path, "r") as f:
+                        payee_info = json.load(f)
+
+                    payee_balanace = payee_info["balance"]
+                    self.balance -= value
+                    payee_balanace += value
+
+                    payee_info["balance"] = payee_balanace
+                    self.account_info["balance"] = self.balance
+
+                    with open(payee_path, "w") as f:
+                        json.dump(payee_info, f , indent= 4)
+
+                    with open(self.user_info_path, "w") as f:
+                        json.dump(self.account_info, f , indent= 4)
+
+                    with open(self.user_info_path, "w") as f:
+                        self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, {self.account_holder}, You Transfered -{value} Rupees to {payee}")
+                        json.dump(self.account_info, f , indent=4)
+
+                    with open(payee_path, "w") as f:
+                        payee_info["history"].append(f"Welcome to {self.account_info["bank"]}, {self.account_holder} is transfered Rupees +{value}, You have Balance of Rupess {payee_info["balance"]}")
+                        json.dump(payee_info, f , indent=4)
+
                     print(
-                        f"Welcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
-
-                    checking_file_exist(self.history)
-
-                    with open(f"{self.history}", "a") as f:
-                        f.write(
-                            f"\nWelcome to {self.bankname}, {self.name}, You Transfered {value} Rupees to {payee}")
-                    if payee != "":
-                        payee_path = f"Bank Account Application/Accounts/{payee}_account.txt"
-                        payee_history_path = f"Bank Account Application/Accounts/{payee}_account_history.txt"
-
-                        with open(f"{payee_path}", "r") as f:
-                            payee_balance = int(f.read())
-                            payee_balance += value
-
-                        with open(f"{payee_path}", "w") as f:
-                            f.write(f"{payee_balance}")
-                        with open(f"{payee_history_path}", "a") as f:
-                            f.write(
-                                f"\nWelcome to {self.bankname}, {self.name} is transfered Rupees +{value}, You have Balance of Rupess {payee_balance}")
+                            f"Welcome to {self.account_info["bank"]}, {self.account_holder}, You Transfered {value} Rupees to {payee}")
+    
+                else:
+                    print("Payee Account Not Available")
             else:
                 print("Insufficient Balance in your Account")
 
 
-# Selecting Options Functionality
+# Selecting Actions Functionality
 
 class account_handling:
     type = input("Login / Signup: ")
@@ -160,9 +166,9 @@ class account_handling:
             if verify_account(self.account_user, self.account_passcode) is True:
 
                 account_access = online_banking(f"{self.account_user}")
+                print("Welcome to Sadaat Bank Limited!")
+                print("Withdraw\nDeposit\nBalance\nHistory\nTransfer\nLogout")
                 while True:
-                    print("Welcome to Sadaat Bank Limited!")
-                    print("Withdraw\nDeposit\nBalance\nHistory\nTransfer\nLogout")
                     select_option = input("Select Menu: ").capitalize()
                     if select_option == "Deposit":
                         account_access.deposit(
@@ -170,7 +176,7 @@ class account_handling:
 
                     elif select_option == "Withdraw":
                         account_access.withdrawal(
-                            int(input(f"{self.account_use} Withdraw Amount: ")))
+                            int(input(f"{self.account_user} Withdraw Amount: ")))
 
                     elif select_option == "Balance":
                         account_access.balance_check()
@@ -188,8 +194,7 @@ class account_handling:
                     else:
                         print(
                             f"Your Selected Option {select_option} is not available in menu")
-            else:
-                print(f"Hi {self.account_user}, You are not a Sadaat Bank Limited User.")
+                
 
         if self.type == "Signup":
 
