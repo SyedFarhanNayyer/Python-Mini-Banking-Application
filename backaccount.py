@@ -20,7 +20,7 @@ def checking_file_exist(filepath):
 
 def account_generate(filepath, name, passcode=0000,):
 
-    account_info = {"Bank" : "Sadaat Bank Limited", "name": name, "pass_code": passcode, "balance": 0, "History" : [] }
+    account_info = {"bank" : "Sadaat Bank Limited", "name": name, "pass_code": passcode, "balance": 0, "history" : [] }
 
     if os.path.exists(filepath):
         print("You already Have Account, Login to your Account")
@@ -56,7 +56,7 @@ class online_banking:
 
         self.balance = user_account_info["balance"]
 
-        print(self.balance)
+        print(f"Your Current Balance is {self.balance}")
 
         with open(self.user_info_path, "r") as f:
             account_info = json.load(f)
@@ -69,11 +69,10 @@ class online_banking:
         
         self.account_info["balance"] = self.balance
         with open(self.user_info_path, "w") as f:
-            json.dump(self.account_info, f , indent=4)
-        print(f"Welcome to {self.account_info["bank"]}, You Deposit Rupees: {amount} you balance is Rupees: {self.balance}")
-        with open(self.user_info_path, "w") as f:
             self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, You Deposit Rupees +{amount}, You have Balance of Rupess {self.account_info["balance"]}")
             json.dump(self.account_info, f , indent=4)
+        print(f"Welcome to {self.account_info["bank"]}, You Deposit Rupees: {amount} you balance is Rupees: {self.balance}")
+            
 
     # Withdrawal Functionality
 
@@ -83,13 +82,11 @@ class online_banking:
             self.account_info["balance"] = self.balance
 
             with open(f"{self.user_info_path}", "w") as f:
-                json.dump(self.account_info, f, indent=4)
-                print(
-                f"Welcome to {self.account_info["bank"]}, You Widthawal of Rupees: {cash} you new balance is Rupees: {self.balance}")
-            
-            with open(self.user_info_path, "w") as f:
                 self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, You Widthawal of Rupees: {cash} you new balance is Rupees: {self.balance}")
                 json.dump(self.account_info, f , indent=4)
+
+                print(
+                f"Welcome to {self.account_info["bank"]}, You Widthawal of Rupees: {cash} you new balance is Rupees: {self.balance}")                
          
         elif cash > 50000:
             print("You Limit is just 50,000 Rupess, Try lower Value")
@@ -115,7 +112,7 @@ class online_banking:
         if payee != "" and value != "":
             if value <= self.balance:
                 payee_path = f"Accounts/{payee}/{payee}_info.json"
-                if payee_path:
+                if os.path.exists(payee_path):
                     with open(payee_path, "r") as f:
                         payee_info = json.load(f)
 
@@ -127,19 +124,15 @@ class online_banking:
                     self.account_info["balance"] = self.balance
 
                     with open(payee_path, "w") as f:
-                        json.dump(payee_info, f , indent= 4)
 
-                    with open(self.user_info_path, "w") as f:
-                        json.dump(self.account_info, f , indent= 4)
-
-                    with open(self.user_info_path, "w") as f:
-                        self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, {self.account_holder}, You Transfered -{value} Rupees to {payee}")
-                        json.dump(self.account_info, f , indent=4)
-
-                    with open(payee_path, "w") as f:
                         payee_info["history"].append(f"Welcome to {self.account_info["bank"]}, {self.account_holder} is transfered Rupees +{value}, You have Balance of Rupess {payee_info["balance"]}")
                         json.dump(payee_info, f , indent=4)
 
+                    with open(self.user_info_path, "w") as f:
+
+                        self.account_info["history"].append(f"Welcome to {self.account_info["bank"]}, {self.account_holder}, You Transfered -{value} Rupees to {payee}")
+                        json.dump(self.account_info, f , indent=4)
+                        
                     print(
                             f"Welcome to {self.account_info["bank"]}, {self.account_holder}, You Transfered {value} Rupees to {payee}")
     
@@ -159,7 +152,6 @@ class account_handling:
         self.account_user = input("Enter Name: ")
         self.account_passcode = input("Enter Passcode: ")
         self.account_path = f"Accounts/{self.account_user}"
-  
 
         if self.type == "Login":
 
